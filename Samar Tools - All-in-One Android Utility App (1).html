@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Samar Tools — All-in-One Utility Suite</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- QRCode.js for Client-Side QR Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- PDF-Lib for Client-Side PDF & Image Merging -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+    <style>
+        /* Mobile-first App Feel & Smooth Transitions */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior-y: none;
+        }
+        /* Hide scrollbars cleanly where needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* View transitions */
+        .tool-view {
+            animation: fadeSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* QR Canvas styling */
+        #qrOutput img, #qrOutput canvas {
+            margin: 0 auto;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top App Bar (Android Material Style) -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <button id="backHomeBtn" onclick="switchView('home')" class="hidden w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-200 active:scale-95 transition">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </button>
+            <div id="appLogoIcon" class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                <i class="fa-solid fa-toolbox text-base"></i>
+            </div>
+            <div>
+                <h1 id="headerTitle" class="text-lg font-bold tracking-tight leading-tight">Samar Tools</h1>
+                <p id="headerSubtitle" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">All-in-One Smart Utility Suite</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Play Store / App Info Modal Trigger -->
+            <button onclick="openInfoModal()" aria-label="App Info" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+            <!-- Theme Toggle -->
+            <button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle Dark Mode" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">
+                <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Toast Notification Banner (Replaces alert()) -->
+    <div id="toastBanner" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2 w-[90%] max-w-sm">
+        <div class="bg-slate-900 dark:bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700/60 flex items-center gap-3 text-sm font-medium">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMessage">Action completed</span>
+        </div>
+    </div>
+
+    <!-- Main Scrollable Content Area -->
+    <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-4 pb-24">
+
+        <!-- ==================== HOME DASHBOARD ==================== -->
+        <section id="view-home" class="tool-view space-y-5">
+            <!-- Hero Quick Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 p-5 text-white shadow-lg shadow-indigo-600/20">
+                <div class="relative z-10">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold backdrop-blur-sm mb-2">
+                        <i class="fa-solid fa-bolt text-amber-300"></i> 6 Pro Tools in 1 App
+                    </span>
+                    <h2 class="text-xl font-bold leading-snug">Everything you need, right in your pocket.</h2>
+                    <p class="text-indigo-100 text-xs mt-1 leading-relaxed">Offline-first utilities + Gemini AI assistant. Fast, clean, and ready for daily tasks.</p>
+                </div>
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl"></div>
+                <div class="absolute right-4 top-4 text-white/15 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+
+            <!-- Search Filter on Home -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="homeSearchInput" oninput="filterHomeTools(this.value)" placeholder="Search tools (Calculator, PDF, QR, AI...)" class="w-full pl-10 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+            </div>
+
+            <!-- 6 Tools Grid -->
+            <div id="toolsGrid" class="grid grid-cols-2 gap-3.5">
+                <!-- Tool 1: Calculator -->
+                <button data-keywords="calculator math percentage scientific" onclick="switchView('calculator')" class="tool-card group text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition flex flex-col justify-between h-36">
+                    <div class="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Calculator</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Standard, % & Scientific</p>
+                    </div>
+                </button>
+
+                <!-- Tool 2: AI Tools -->
+                <button data-keywords="ai gemini write summarize email caption prompt" onclick="switchView('ai')" class="tool-card group text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition flex flex-col justify-between h-36">
+                    <div class="w-11 h-11 rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">AI Tools</h3>
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300">AI</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Summarize, Rewrite & More</p>
+                    </div>
+                </button>
+
+                <!-- Tool 3: Photo & Video Tools -->
+                <button data-keywords="photo video image compress resize convert frame" onclick="switchView('media')" class="tool-card group text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition flex flex-col justify-between h-36">
+                    <div class="w-11 h-11 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-photo-film"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Photo & Video</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Compress, Convert & Frame</p>
+                    </div>
+                </button>
+
+                <!-- Tool 4: Notes -->
+                <button data-keywords="note notepad memo list text save" onclick="switchView('notes')" class="tool-card group text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition flex flex-col justify-between h-36">
+                    <div class="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-note-sticky"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Smart Notes</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Offline Auto-Saved Notes</p>
+                    </div>
+                </button>
+
+                <!-- Tool 5: QR Code Generator -->
+                <button data-keywords="qr code barcode wifi link url generator" onclick="switchView('qr')" class="tool-card group text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition flex flex-col justify-between h-36">
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">QR Generator</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">URL, Wi-Fi, Contact & PNG</p>
+                    </div>
+                </button>
+
+                <!-- Tool 6: Merge File -->
+                <button data-keywords="merge file pdf combine images join" onclick="switchView('merge')" class="tool-card group text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md active:scale-[0.98] transition flex flex-col justify-between h-36">
+                    <div class="w-11 h-11 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Merge File</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Combine PDFs & Images</p>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TOOL 1: CALCULATOR ==================== -->
+        <section id="view-calculator" class="tool-view hidden space-y-4">
+            <!-- Display Screen -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <button onclick="toggleCalcScientific()" id="sciToggleBtn" class="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                        <i class="fa-solid fa-flask mr-1"></i> Scientific: OFF
+                    </button>
+                    <button onclick="toggleCalcHistory()" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> History (<span id="calcHistCount">0</span>)
+                    </button>
+                </div>
+
+                <!-- Collapsible History Panel -->
+                <div id="calcHistoryPanel" class="hidden mb-3 max-h-32 overflow-y-auto bg-slate-50 dark:bg-slate-950 rounded-2xl p-3 border border-slate-200/70 dark:border-slate-800 space-y-1.5 text-right">
+                    <div id="calcHistoryList" class="text-xs text-slate-500 space-y-1">No recent calculations</div>
+                </div>
+
+                <div class="text-right overflow-x-auto no-scrollbar">
+                    <div id="calcExpression" class="text-sm text-slate-400 dark:text-slate-500 h-6 font-medium tracking-wide"></div>
+                    <div id="calcDisplay" class="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">0</div>
+                </div>
+            </div>
+
+            <!-- Scientific Row (Hidden by default) -->
+            <div id="sciButtonsRow" class="hidden grid grid-cols-5 gap-2">
+                <button onclick="calcFunc('sin')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">sin</button>
+                <button onclick="calcFunc('cos')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">cos</button>
+                <button onclick="calcFunc('tan')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">tan</button>
+                <button onclick="calcFunc('sqrt')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">√</button>
+                <button onclick="calcFunc('pow2')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">x²</button>
+                <button onclick="calcFunc('log')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">log</button>
+                <button onclick="calcFunc('ln')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">ln</button>
+                <button onclick="calcInput('(')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">(</button>
+                <button onclick="calcInput(')')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">)</button>
+                <button onclick="calcConst('PI')" class="py-2.5 rounded-2xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold active:scale-95 transition">π</button>
+            </div>
+
+            <!-- Standard Keypad -->
+            <div class="grid grid-cols-4 gap-2.5">
+                <button onclick="calcClear()" class="h-14 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold text-lg active:scale-95 transition">AC</button>
+                <button onclick="calcBackspace()" class="h-14 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-lg active:scale-95 transition"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="calcPercent()" class="h-14 rounded-2xl bg-slate-200 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-lg active:scale-95 transition">%</button>
+                <button onclick="calcInput('/')" class="h-14 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-xl active:scale-95 transition">÷</button>
+
+                <button onclick="calcInput('7')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">7</button>
+                <button onclick="calcInput('8')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">8</button>
+                <button onclick="calcInput('9')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">9</button>
+                <button onclick="calcInput('*')" class="h-14 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-xl active:scale-95 transition">×</button>
+
+                <button onclick="calcInput('4')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">4</button>
+                <button onclick="calcInput('5')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">5</button>
+                <button onclick="calcInput('6')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">6</button>
+                <button onclick="calcInput('-')" class="h-14 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-xl active:scale-95 transition">−</button>
+
+                <button onclick="calcInput('1')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">1</button>
+                <button onclick="calcInput('2')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">2</button>
+                <button onclick="calcInput('3')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">3</button>
+                <button onclick="calcInput('+')" class="h-14 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-xl active:scale-95 transition">+</button>
+
+                <button onclick="calcInput('00')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-lg active:scale-95 transition">00</button>
+                <button onclick="calcInput('0')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-semibold text-xl active:scale-95 transition">0</button>
+                <button onclick="calcInput('.')" class="h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 font-bold text-xl active:scale-95 transition">.</button>
+                <button onclick="calcEvaluate()" class="h-14 rounded-2xl bg-indigo-600 text-white font-bold text-2xl shadow-md shadow-indigo-600/30 active:scale-95 transition">=</button>
+            </div>
+        </section>
+
+        <!-- ==================== TOOL 2: AI TOOLS ==================== -->
+        <section id="view-ai" class="tool-view hidden space-y-4">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                        <i class="fa-solid fa-sparkles mr-1"></i> Gemini AI Assistant
+                    </span>
+                    <span class="text-[11px] text-slate-400">Instant Text Studio</span>
+                </div>
+
+                <!-- Mode Selector Pills -->
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <button onclick="setAiMode('summarize', this)" class="ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-violet-600 text-white transition">Summarize</button>
+                    <button onclick="setAiMode('rewrite', this)" class="ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition">Polish & Rewrite</button>
+                    <button onclick="setAiMode('email', this)" class="ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition">Email Draft</button>
+                    <button onclick="setAiMode('caption', this)" class="ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition">Social Caption</button>
+                    <button onclick="setAiMode('prompt', this)" class="ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition">AI Prompt Boost</button>
+                </div>
+
+                <div>
+                    <label id="aiInputLabel" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Paste text or topic to summarize:</label>
+                    <textarea id="aiInputText" rows="4" placeholder="Enter your text, rough notes, or topic here..." class="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"></textarea>
+                </div>
+
+                <button id="aiGenerateBtn" onclick="runAiTool()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-md shadow-violet-600/20 active:scale-[0.99] transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI
+                </button>
+            </div>
+
+            <!-- AI Output Card -->
+            <div id="aiResultCard" class="hidden bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i> AI Output</span>
+                    <div class="flex gap-2">
+                        <button onclick="saveAiToNotes()" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 active:scale-95 transition">
+                            <i class="fa-solid fa-bookmark mr-1"></i> Save Note
+                        </button>
+                        <button onclick="copyTextFromElement('aiOutputText')" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 active:scale-95 transition">
+                            <i class="fa-regular fa-copy mr-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                <div id="aiOutputText" class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800"></div>
+            </div>
+        </section>
+
+        <!-- ==================== TOOL 3: PHOTO & VIDEO TOOLS ==================== -->
+        <section id="view-media" class="tool-view hidden space-y-4">
+            <!-- Sub-Tabs: Photo vs Video -->
+            <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/70 dark:bg-slate-900 rounded-2xl">
+                <button id="mediaTabPhoto" onclick="switchMediaTab('photo')" class="py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm transition">
+                    <i class="fa-solid fa-image mr-1.5"></i> Photo Studio
+                </button>
+                <button id="mediaTabVideo" onclick="switchMediaTab('video')" class="py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition">
+                    <i class="fa-solid fa-video mr-1.5"></i> Video Frame Tool
+                </button>
+            </div>
+
+            <!-- PHOTO STUDIO -->
+            <div id="photoStudioPanel" class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 cursor-pointer hover:border-indigo-500 transition bg-slate-50/50 dark:bg-slate-950/50">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-500 mb-2"></i>
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-200">Select Photo to Compress / Convert</span>
+                    <span class="text-xs text-slate-400 mt-1">Supports JPG, PNG, WEBP</span>
+                    <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)" class="hidden">
+                </label>
+
+                <div id="photoEditorControls" class="hidden space-y-4">
+                    <div class="flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800">
+                        <div>
+                            <span class="text-slate-400 block">Original</span>
+                            <span id="photoOrigInfo" class="font-bold text-slate-700 dark:text-slate-200">-</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-slate-400"></i>
+                        <div class="text-right">
+                            <span class="text-slate-400 block">Processed</span>
+                            <span id="photoNewInfo" class="font-bold text-emerald-600 dark:text-emerald-400">-</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Output Format</label>
+                            <select id="photoFormat" onchange="processPhoto()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+                                <option value="image/jpeg">JPEG (.jpg)</option>
+                                <option value="image/webp">WEBP (.webp)</option>
+                                <option value="image/png">PNG (.png)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Scale Width (%)</label>
+                            <select id="photoScale" onchange="processPhoto()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+                                <option value="1">100% (Original)</option>
+                                <option value="0.75">75% Resize</option>
+                                <option value="0.5">50% Resize</option>
+                                <option value="0.25">25% Thumbnail</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">Compression Quality</span>
+                            <span id="photoQualityVal" class="text-indigo-600 dark:text-indigo-400">80%</span>
+                        </div>
+                        <input type="range" id="photoQuality" min="10" max="100" value="80" oninput="document.getElementById('photoQualityVal').textContent=this.value+'%'; processPhoto()" class="w-full accent-indigo-600">
+                    </div>
+
+                    <div class="rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 max-h-56 flex items-center justify-center">
+                        <img id="photoPreviewImg" alt="Processed preview" class="max-h-56 w-auto object-contain">
+                    </div>
+
+                    <button onclick="downloadProcessedPhoto()" class="w-full py-3.5 rounded-2xl bg-indigo-600 text-white font-bold text-sm shadow-md shadow-indigo-600/20 active:scale-[0.99] transition">
+                        <i class="fa-solid fa-download mr-1.5"></i> Download Optimized Photo
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIDEO FRAME EXTRACTOR & INFO -->
+            <div id="videoStudioPanel" class="hidden bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 cursor-pointer hover:border-rose-500 transition bg-slate-50/50 dark:bg-slate-950/50">
+                    <i class="fa-solid fa-film text-3xl text-rose-500 mb-2"></i>
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-200">Select Video File</span>
+                    <span class="text-xs text-slate-400 mt-1">Inspect metadata & capture HD snapshot frames</span>
+                    <input type="file" id="videoInput" accept="video/*" onchange="handleVideoUpload(event)" class="hidden">
+                </label>
+
+                <div id="videoEditorControls" class="hidden space-y-4">
+                    <div id="videoMetaBox" class="grid grid-cols-3 gap-2 text-center bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs">
+                        <div>
+                            <span class="text-slate-400 block">Resolution</span>
+                            <span id="vidRes" class="font-bold">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block">Duration</span>
+                            <span id="vidDur" class="font-bold">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block">Size</span>
+                            <span id="vidSize" class="font-bold">-</span>
+                        </div>
+                    </div>
+
+                    <video id="videoPlayer" controls playsinline class="w-full rounded-2xl bg-black max-h-56"></video>
+
+                    <button onclick="captureVideoFrame()" class="w-full py-3.5 rounded-2xl bg-rose-600 text-white font-bold text-sm shadow-md shadow-rose-600/20 active:scale-[0.99] transition">
+                        <i class="fa-solid fa-camera mr-1.5"></i> Capture Current Frame as PNG
+                    </button>
+
+                    <div id="capturedFrameBox" class="hidden space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                        <p class="text-xs font-semibold text-slate-500">Captured Frame:</p>
+                        <img id="capturedFrameImg" alt="Captured video frame" class="w-full rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <button onclick="downloadVideoFrame()" class="w-full py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs active:scale-[0.99] transition">
+                            <i class="fa-solid fa-download mr-1"></i> Save Frame Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TOOL 4: SMART NOTES ==================== -->
+        <section id="view-notes" class="tool-view hidden space-y-4">
+            <!-- Note Editor Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <span id="noteEditorHeading" class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                        <i class="fa-solid fa-pen-to-square mr-1"></i> New Note
+                    </span>
+                    <button id="cancelEditNoteBtn" onclick="resetNoteForm()" class="hidden text-xs text-slate-400 hover:text-slate-600">Cancel Edit</button>
+                </div>
+                <input type="text" id="noteTitleInput" placeholder="Note title..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <textarea id="noteBodyInput" rows="3" placeholder="Write your note, checklist, or idea..." class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                <button onclick="saveNote()" id="saveNoteBtn" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md shadow-amber-500/20 active:scale-[0.99] transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Save Note
+                </button>
+            </div>
+
+            <!-- Search Notes -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="noteSearchInput" oninput="renderNotes()" placeholder="Search saved notes..." class="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+
+            <!-- Notes List -->
+            <div id="notesListContainer" class="space-y-3"></div>
+        </section>
+
+        <!-- ==================== TOOL 5: QR CODE GENERATOR ==================== -->
+        <section id="view-qr" class="tool-view hidden space-y-4">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <!-- QR Type Tabs -->
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setQrType('text', this)" class="qr-type-btn py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white transition">URL / Text</button>
+                    <button onclick="setQrType('wifi', this)" class="qr-type-btn py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition">Wi-Fi</button>
+                    <button onclick="setQrType('contact', this)" class="qr-type-btn py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition">Contact</button>
+                </div>
+
+                <!-- Input: URL / Text -->
+                <div id="qrFields-text" class="space-y-2">
+                    <label class="block text-xs font-semibold text-slate-500">Website URL or Plain Text</label>
+                    <input type="text" id="qrTextInput" value="https://samartools.app" oninput="generateQR()" placeholder="https://example.com or any text" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <!-- Input: Wi-Fi -->
+                <div id="qrFields-wifi" class="hidden space-y-2.5">
+                    <input type="text" id="qrWifiSsid" oninput="generateQR()" placeholder="Wi-Fi Network Name (SSID)" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm">
+                    <input type="text" id="qrWifiPass" oninput="generateQR()" placeholder="Wi-Fi Password" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm">
+                    <select id="qrWifiEnc" onchange="generateQR()" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm">
+                        <option value="WPA">WPA / WPA2</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">No Password</option>
+                    </select>
+                </div>
+
+                <!-- Input: Contact -->
+                <div id="qrFields-contact" class="hidden space-y-2.5">
+                    <input type="text" id="qrContactName" oninput="generateQR()" placeholder="Full Name" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm">
+                    <input type="tel" id="qrContactPhone" oninput="generateQR()" placeholder="Phone Number (+91...)" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm">
+                    <input type="email" id="qrContactEmail" oninput="generateQR()" placeholder="Email Address" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm">
+                </div>
+
+                <!-- QR Color Picker -->
+                <div class="flex items-center justify-between pt-1">
+                    <span class="text-xs font-semibold text-slate-500">QR Foreground Color</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="setQrColor('#0f172a')" class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white shadow"></button>
+                        <button onclick="setQrColor('#4f46e5')" class="w-6 h-6 rounded-full bg-indigo-600 border-2 border-white shadow"></button>
+                        <button onclick="setQrColor('#059669')" class="w-6 h-6 rounded-full bg-emerald-600 border-2 border-white shadow"></button>
+                        <button onclick="setQrColor('#e11d48')" class="w-6 h-6 rounded-full bg-rose-600 border-2 border-white shadow"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Preview & Download -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm text-center space-y-4">
+                <div class="inline-block p-4 bg-white rounded-2xl shadow-inner border border-slate-100">
+                    <div id="qrOutput"></div>
+                </div>
+                <button onclick="downloadQR()" class="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm shadow-md shadow-emerald-600/20 active:scale-[0.99] transition">
+                    <i class="fa-solid fa-download mr-1.5"></i> Download QR Code (PNG)
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TOOL 6: MERGE FILE ==================== -->
+        <section id="view-merge" class="tool-view hidden space-y-4">
+            <!-- Sub-Tabs: PDF Merge vs Images-to-PDF -->
+            <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/70 dark:bg-slate-900 rounded-2xl">
+                <button id="mergeTabPdf" onclick="switchMergeTab('pdf')" class="py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm transition">
+                    <i class="fa-solid fa-file-pdf mr-1.5"></i> Merge PDFs
+                </button>
+                <button id="mergeTabImg" onclick="switchMergeTab('img')" class="py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition">
+                    <i class="fa-solid fa-images mr-1.5"></i> Images to PDF
+                </button>
+            </div>
+
+            <!-- MERGE MULTIPLE PDFs -->
+            <div id="mergePdfPanel" class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 cursor-pointer hover:border-cyan-500 transition bg-slate-50/50 dark:bg-slate-950/50">
+                    <i class="fa-solid fa-file-circle-plus text-3xl text-cyan-500 mb-2"></i>
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-200">Add PDF Files to Merge</span>
+                    <span class="text-xs text-slate-400 mt-1">Select 2 or more PDFs (100% private on-device)</span>
+                    <input type="file" id="pdfFilesInput" accept="application/pdf" multiple onchange="handlePdfFilesSelect(event)" class="hidden">
+                </label>
+
+                <div id="pdfFileList" class="space-y-2"></div>
+
+                <button id="mergePdfBtn" onclick="mergeSelectedPdfs()" disabled class="w-full py-3.5 rounded-2xl bg-cyan-600 disabled:opacity-40 text-white font-bold text-sm shadow-md shadow-cyan-600/20 active:scale-[0.99] transition">
+                    <i class="fa-solid fa-object-group mr-1.5"></i> Merge & Download PDF
+                </button>
+            </div>
+
+            <!-- MERGE IMAGES TO SINGLE PDF -->
+            <div id="mergeImgPanel" class="hidden bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 cursor-pointer hover:border-cyan-500 transition bg-slate-50/50 dark:bg-slate-950/50">
+                    <i class="fa-solid fa-images text-3xl text-cyan-500 mb-2"></i>
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-200">Select Images to Combine</span>
+                    <span class="text-xs text-slate-400 mt-1">JPG or PNG images merged into one PDF</span>
+                    <input type="file" id="imgPdfFilesInput" accept="image/jpeg,image/png,image/webp" multiple onchange="handleImgPdfSelect(event)" class="hidden">
+                </label>
+
+                <div id="imgPdfFileList" class="space-y-2"></div>
+
+                <button id="mergeImgBtn" onclick="mergeImagesToPdf()" disabled class="w-full py-3.5 rounded-2xl bg-cyan-600 disabled:opacity-40 text-white font-bold text-sm shadow-md shadow-cyan-600/20 active:scale-[0.99] transition">
+                    <i class="fa-solid fa-file-export mr-1.5"></i> Create & Download PDF
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Android Navigation Bar -->
+    <nav class="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 shadow-lg">
+        <div class="max-w-lg mx-auto grid grid-cols-5 gap-1">
+            <button onclick="switchView('home')" id="nav-home" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-indigo-600 dark:text-indigo-400 font-semibold transition">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="text-[10px] mt-1">Home</span>
+            </button>
+            <button onclick="switchView('calculator')" id="nav-calculator" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-medium transition">
+                <i class="fa-solid fa-calculator text-base"></i>
+                <span class="text-[10px] mt-1">Calc</span>
+            </button>
+            <button onclick="switchView('ai')" id="nav-ai" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-medium transition">
+                <i class="fa-solid fa-wand-magic-sparkles text-base"></i>
+                <span class="text-[10px] mt-1">AI Tools</span>
+            </button>
+            <button onclick="switchView('notes')" id="nav-notes" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-medium transition">
+                <i class="fa-solid fa-note-sticky text-base"></i>
+                <span class="text-[10px] mt-1">Notes</span>
+            </button>
+            <button onclick="switchView('merge')" id="nav-merge" class="nav-tab flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-medium transition">
+                <i class="fa-solid fa-file-pdf text-base"></i>
+                <span class="text-[10px] mt-1">Merge</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- App Info & Play Store Readiness Modal -->
+    <div id="infoModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                        <i class="fa-solid fa-toolbox"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base">Samar Tools v1.0</h3>
+                        <p class="text-xs text-slate-400">Play Store Ready Web/Android App</p>
+                    </div>
+                </div>
+                <button onclick="closeInfoModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="text-xs text-slate-600 dark:text-slate-300 space-y-2 bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800">
+                <p><strong>Privacy First:</strong> Calculator, Notes, Photo/Video processing, QR Generator, and PDF Merger run 100% locally on your device.</p>
+                <p><strong>Android Packaging:</strong> Wrap this single HTML file using <strong>Capacitor</strong>, <strong>Cordova</strong>, or <strong>PWABuilder</strong> to generate a signed <code>.aab</code> bundle for Google Play Console.</p>
+            </div>
+
+            <button onclick="closeInfoModal()" class="w-full py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm">Got it</button>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           1. CORE NAVIGATION, THEME & TOAST UTILITIES
+        ===================================================================== */
+        const VIEW_META = {
+            home: { title: 'Samar Tools', subtitle: 'All-in-One Smart Utility Suite' },
+            calculator: { title: 'Calculator', subtitle: 'Standard & Scientific Math' },
+            ai: { title: 'AI Tools', subtitle: 'Powered by Gemini AI' },
+            media: { title: 'Photo & Video', subtitle: 'Compress, Convert & Extract' },
+            notes: { title: 'Smart Notes', subtitle: 'Offline Persistent Notepad' },
+            qr: { title: 'QR Generator', subtitle: 'Instant Custom QR Codes' },
+            merge: { title: 'Merge File', subtitle: 'Combine PDFs & Images' }
+        };
+
+        function switchView(viewId) {
+            // Hide all sections
+            document.querySelectorAll('.tool-view').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`view-${viewId}`);
+            if (target) target.classList.remove('hidden');
+
+            // Update Header Title & Back Button
+            const meta = VIEW_META[viewId] || VIEW_META.home;
+            document.getElementById('headerTitle').textContent = meta.title;
+            document.getElementById('headerSubtitle').textContent = meta.subtitle;
+
+            const backBtn = document.getElementById('backHomeBtn');
+            const logoIcon = document.getElementById('appLogoIcon');
+            if (viewId === 'home') {
+                backBtn.classList.add('hidden');
+                logoIcon.classList.remove('hidden');
+            } else {
+                backBtn.classList.remove('hidden');
+                logoIcon.classList.add('hidden');
+            }
+
+            // Update Bottom Navigation Active State
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('text-indigo-600', 'dark:text-indigo-400', 'font-semibold');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400', 'font-medium');
+            });
+            const activeNav = document.getElementById(`nav-${viewId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-500', 'dark:text-slate-400', 'font-medium');
+                activeNav.classList.add('text-indigo-600', 'dark:text-indigo-400', 'font-semibold');
+            }
+
+            // Initialize QR when opening QR view
+            if (viewId === 'qr' && !qrInitialized) {
+                generateQR();
+                qrInitialized = true;
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function filterHomeTools(query) {
+            const q = query.trim().toLowerCase();
+            document.querySelectorAll('.tool-card').forEach(card => {
+                const keywords = card.getAttribute('data-keywords') || '';
+                const text = card.textContent.toLowerCase();
+                card.style.display = (keywords.includes(q) || text.includes(q)) ? 'flex' : 'none';
+            });
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            localStorage.setItem('samar_theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
+        }
+
+        // Load saved theme
+        (function initTheme() {
+            const saved = localStorage.getItem('samar_theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-sm';
+            }
+        })();
+
+        let toastTimer = null;
+        function showToast(message, isError = false) {
+            const banner = document.getElementById('toastBanner');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.textContent = message;
+            iconEl.className = isError
+                ? 'fa-solid fa-circle-exclamation text-rose-400'
+                : 'fa-solid fa-circle-check text-emerald-400';
+
+            banner.classList.remove('opacity-0', '-translate-y-2');
+            banner.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                banner.classList.remove('opacity-100', 'translate-y-0');
+                banner.classList.add('opacity-0', '-translate-y-2');
+            }, 2600);
+        }
+
+        function copyTextFromElement(elId) {
+            const text = document.getElementById(elId).innerText;
+            copyToClipboard(text);
+        }
+
+        function copyToClipboard(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('Copied to clipboard!');
+            } catch (e) {
+                showToast('Unable to copy text', true);
+            }
+            document.body.removeChild(ta);
+        }
+
+        function openInfoModal() {
+            document.getElementById('infoModal').classList.remove('hidden');
+        }
+        function closeInfoModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+
+        /* =====================================================================
+           2. CALCULATOR LOGIC
+        ===================================================================== */
+        let calcExpr = '';
+        let calcHistory = JSON.parse(localStorage.getItem('samar_calc_hist') || '[]');
+        let sciVisible = false;
+
+        function updateCalcUI() {
+            document.getElementById('calcExpression').textContent = calcExpr;
+            document.getElementById('calcDisplay').textContent = calcExpr || '0';
+            document.getElementById('calcHistCount').textContent = calcHistory.length;
+        }
+
+        function calcInput(val) {
+            if (calcExpr === 'Error') calcExpr = '';
+            calcExpr += val;
+            updateCalcUI();
+        }
+
+        function calcClear() {
+            calcExpr = '';
+            updateCalcUI();
+        }
+
+        function calcBackspace() {
+            if (calcExpr === 'Error') calcExpr = '';
+            calcExpr = calcExpr.slice(0, -1);
+            updateCalcUI();
+        }
+
+        function calcPercent() {
+            try {
+                if (!calcExpr) return;
+                const val = evalSafeMath(calcExpr) / 100;
+                calcExpr = String(Number(val.toFixed(8)));
+                updateCalcUI();
+            } catch {
+                calcExpr = 'Error';
+                updateCalcUI();
+            }
+        }
+
+        function calcConst(name) {
+            if (name === 'PI') calcInput(String(Math.PI.toFixed(6)));
+        }
+
+        function calcFunc(fn) {
+            try {
+                const current = calcExpr ? evalSafeMath(calcExpr) : 0;
+                let res = 0;
+                if (fn === 'sin') res = Math.sin(current * Math.PI / 180);
+                if (fn === 'cos') res = Math.cos(current * Math.PI / 180);
+                if (fn === 'tan') res = Math.tan(current * Math.PI / 180);
+                if (fn === 'sqrt') res = Math.sqrt(current);
+                if (fn === 'pow2') res = Math.pow(current, 2);
+                if (fn === 'log') res = Math.log10(current);
+                if (fn === 'ln') res = Math.log(current);
+
+                if (isNaN(res) || !isFinite(res)) throw new Error('Invalid');
+                const formatted = String(Number(res.toFixed(8)));
+                addCalcHistory(`${fn}(${current})`, formatted);
+                calcExpr = formatted;
+                updateCalcUI();
+            } catch {
+                calcExpr = 'Error';
+                updateCalcUI();
+            }
+        }
+
+        function evalSafeMath(expression) {
+            // Sanitize to only allow valid arithmetic characters
+            const sanitized = expression.replace(/[^0-9+\-*/().]/g, '');
+            if (!sanitized) return 0;
+            return Function('"use strict"; return (' + sanitized + ')')();
+        }
+
+        function calcEvaluate() {
+            if (!calcExpr) return;
+            try {
+                const rawExpr = calcExpr;
+                const result = evalSafeMath(rawExpr);
+                if (isNaN(result) || !isFinite(result)) throw new Error('Math Error');
+                const formatted = String(Number(result.toFixed(8)));
+                addCalcHistory(rawExpr, formatted);
+                document.getElementById('calcExpression').textContent = rawExpr + ' =';
+                document.getElementById('calcDisplay').textContent = formatted;
+                calcExpr = formatted;
+            } catch {
+                document.getElementById('calcDisplay').textContent = 'Error';
+                calcExpr = '';
+            }
+        }
+
+        function addCalcHistory(expr, res) {
+            calcHistory.unshift({ expr, res });
+            if (calcHistory.length > 15) calcHistory.pop();
+            localStorage.setItem('samar_calc_hist', JSON.stringify(calcHistory));
+            renderCalcHistory();
+        }
+
+        function renderCalcHistory() {
+            document.getElementById('calcHistCount').textContent = calcHistory.length;
+            const list = document.getElementById('calcHistoryList');
+            if (!calcHistory.length) {
+                list.innerHTML = '<div class="text-slate-400">No recent calculations</div>';
+                return;
+            }
+            list.innerHTML = calcHistory.map(item => `
+                <button onclick="calcExpr='${item.res}'; updateCalcUI();" class="w-full text-right py-1 px-2 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 block">
+                    <span class="text-slate-400">${item.expr} = </span>
+                    <span class="font-bold text-indigo-600 dark:text-indigo-400">${item.res}</span>
+                </button>
+            `).join('');
+        }
+
+        function toggleCalcHistory() {
+            renderCalcHistory();
+            document.getElementById('calcHistoryPanel').classList.toggle('hidden');
+        }
+
+        function toggleCalcScientific() {
+            sciVisible = !sciVisible;
+            document.getElementById('sciButtonsRow').classList.toggle('hidden', !sciVisible);
+            document.getElementById('sciToggleBtn').innerHTML = `<i class="fa-solid fa-flask mr-1"></i> Scientific: ${sciVisible ? 'ON' : 'OFF'}`;
+        }
+        renderCalcHistory();
+
+        /* =====================================================================
+           3. AI TOOLS (GEMINI API INTEGRATION)
+        ===================================================================== */
+        let currentAiMode = 'summarize';
+        const AI_PROMPTS = {
+            summarize: {
+                label: 'Paste text or article to summarize into clear bullet points:',
+                sys: 'You are a concise, helpful assistant inside Samar Tools. Summarize the user text into clear, easy-to-read bullet points.'
+            },
+            rewrite: {
+                label: 'Paste text to rewrite professionally and fix grammar:',
+                sys: 'You are an expert editor inside Samar Tools. Rewrite the user text to sound clear, polished, and natural while keeping the original meaning.'
+            },
+            email: {
+                label: 'Describe the email you need (recipient & purpose):',
+                sys: 'You are a professional communication assistant inside Samar Tools. Write a clear, polite, ready-to-send email based on the user request.'
+            },
+            caption: {
+                label: 'Describe your photo, reel, or post topic:',
+                sys: 'You are a creative social media assistant inside Samar Tools. Generate 4 engaging social media captions with relevant hashtags.'
+            },
+            prompt: {
+                label: 'Enter a basic idea to turn into a detailed AI prompt:',
+                sys: 'You are an AI prompt engineer inside Samar Tools. Expand the user idea into a rich, structured, high-performing AI prompt.'
+            }
+        };
+
+        function setAiMode(mode, btnEl) {
+            currentAiMode = mode;
+            document.querySelectorAll('.ai-mode-btn').forEach(b => {
+                b.className = 'ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition';
+            });
+            btnEl.className = 'ai-mode-btn shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold bg-violet-600 text-white transition';
+            document.getElementById('aiInputLabel').textContent = AI_PROMPTS[mode].label;
+        }
+
+        async function runAiTool() {
+            const input = document.getElementById('aiInputText').value.trim();
+            if (!input) {
+                showToast('Please enter some text first', true);
+                return;
+            }
+
+            const btn = document.getElementById('aiGenerateBtn');
+            const origBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Thinking...';
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: input }] }],
+                systemInstruction: {
+                    parts: [{ text: AI_PROMPTS[currentAiMode].sys }]
+                }
+            };
+
+            try {
+                const text = await fetchGeminiWithRetry(apiUrl, payload);
+                document.getElementById('aiOutputText').textContent = text;
+                document.getElementById('aiResultCard').classList.remove('hidden');
+                showToast('AI response generated!');
+            } catch (err) {
+                showToast('AI request failed. Check internet connection.', true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origBtnHtml;
+            }
+        }
+
+        async function fetchGeminiWithRetry(url, payload, retries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!output) throw new Error('Empty response');
+                    return output;
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        function saveAiToNotes() {
+            const content = document.getElementById('aiOutputText').textContent.trim();
+            if (!content) return;
+            const notes = JSON.parse(localStorage.getItem('samar_notes') || '[]');
+            notes.unshift({
+                id: Date.now(),
+                title: `AI ${currentAiMode.toUpperCase()} Note`,
+                body: content,
+                updatedAt: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('samar_notes', JSON.stringify(notes));
+            renderNotes();
+            showToast('Saved to Smart Notes!');
+        }
+
+        /* =====================================================================
+           4. PHOTO & VIDEO TOOLS
+        ===================================================================== */
+        let loadedPhotoImage = null;
+        let processedPhotoDataUrl = '';
+        let loadedPhotoName = 'samar_photo';
+
+        function switchMediaTab(tab) {
+            const isPhoto = tab === 'photo';
+            document.getElementById('photoStudioPanel').classList.toggle('hidden', !isPhoto);
+            document.getElementById('videoStudioPanel').classList.toggle('hidden', isPhoto);
+
+            document.getElementById('mediaTabPhoto').className = isPhoto
+                ? 'py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm transition'
+                : 'py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition';
+            document.getElementById('mediaTabVideo').className = !isPhoto
+                ? 'py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 shadow-sm transition'
+                : 'py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition';
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            loadedPhotoName = file.name.replace(/\.[^/.]+$/, '');
+            const origSizeStr = formatBytes(file.size);
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    loadedPhotoImage = img;
+                    document.getElementById('photoOrigInfo').textContent = `${img.width}×${img.height} (${origSizeStr})`;
+                    document.getElementById('photoEditorControls').classList.remove('hidden');
+                    processPhoto();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function processPhoto() {
+            if (!loadedPhotoImage) return;
+            const format = document.getElementById('photoFormat').value;
+            const scale = parseFloat(document.getElementById('photoScale').value);
+            const quality = parseInt(document.getElementById('photoQuality').value, 10) / 100;
+
+            const canvas = document.createElement('canvas');
+            const targetW = Math.max(1, Math.round(loadedPhotoImage.width * scale));
+            const targetH = Math.max(1, Math.round(loadedPhotoImage.height * scale));
+            canvas.width = targetW;
+            canvas.height = targetH;
+
+            const ctx = canvas.getContext('2d');
+            if (format === 'image/jpeg') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, targetW, targetH);
+            }
+            ctx.drawImage(loadedPhotoImage, 0, 0, targetW, targetH);
+
+            processedPhotoDataUrl = canvas.toDataURL(format, quality);
+            document.getElementById('photoPreviewImg').src = processedPhotoDataUrl;
+
+            // Approximate byte size from dataURL
+            const headLength = processedPhotoDataUrl.indexOf(',') + 1;
+            const approxBytes = Math.round((processedPhotoDataUrl.length - headLength) * 0.75);
+            document.getElementById('photoNewInfo').textContent = `${targetW}×${targetH} (${formatBytes(approxBytes)})`;
+        }
+
+        function downloadProcessedPhoto() {
+            if (!processedPhotoDataUrl) return;
+            const format = document.getElementById('photoFormat').value;
+            const ext = format === 'image/png' ? 'png' : format === 'image/webp' ? 'webp' : 'jpg';
+            const link = document.createElement('a');
+            link.href = processedPhotoDataUrl;
+            link.download = `${loadedPhotoName}_samar.${ext}`;
+            link.click();
+            showToast('Optimized photo downloaded!');
+        }
+
+        // Video Frame Tool
+        let capturedFrameDataUrl = '';
+        function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            const video = document.getElementById('videoPlayer');
+            video.src = url;
+            document.getElementById('vidSize').textContent = formatBytes(file.size);
+            document.getElementById('capturedFrameBox').classList.add('hidden');
+
+            video.onloadedmetadata = function() {
+                document.getElementById('vidRes').textContent = `${video.videoWidth}×${video.videoHeight}`;
+                const mins = Math.floor(video.duration / 60);
+                const secs = Math.floor(video.duration % 60).toString().padStart(2, '0');
+                document.getElementById('vidDur').textContent = `${mins}:${secs}`;
+                document.getElementById('videoEditorControls').classList.remove('hidden');
+            };
+        }
+
+        function captureVideoFrame() {
+            const video = document.getElementById('videoPlayer');
+            if (!video.videoWidth) {
+                showToast('Load a video first', true);
+                return;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            capturedFrameDataUrl = canvas.toDataURL('image/png');
+            document.getElementById('capturedFrameImg').src = capturedFrameDataUrl;
+            document.getElementById('capturedFrameBox').classList.remove('hidden');
+            showToast('Video frame captured!');
+        }
+
+        function downloadVideoFrame() {
+            if (!capturedFrameDataUrl) return;
+            const link = document.createElement('a');
+            link.href = capturedFrameDataUrl;
+            link.download = `samar_video_frame_${Date.now()}.png`;
+            link.click();
+            showToast('Frame image saved!');
+        }
+
+        /* =====================================================================
+           5. SMART NOTES (PERSISTENT LOCALSTORAGE)
+        ===================================================================== */
+        let editingNoteId = null;
+
+        function getNotes() {
+            return JSON.parse(localStorage.getItem('samar_notes') || '[]');
+        }
+
+        function saveNote() {
+            const title = document.getElementById('noteTitleInput').value.trim();
+            const body = document.getElementById('noteBodyInput').value.trim();
+
+            if (!title && !body) {
+                showToast('Write a title or note first', true);
+                return;
+            }
+
+            let notes = getNotes();
+            if (editingNoteId) {
+                notes = notes.map(n => n.id === editingNoteId ? {
+                    ...n,
+                    title: title || 'Untitled Note',
+                    body,
+                    updatedAt: new Date().toLocaleDateString()
+                } : n);
+                showToast('Note updated!');
+            } else {
+                notes.unshift({
+                    id: Date.now(),
+                    title: title || 'Untitled Note',
+                    body,
+                    updatedAt: new Date().toLocaleDateString()
+                });
+                showToast('Note saved!');
+            }
+
+            localStorage.setItem('samar_notes', JSON.stringify(notes));
+            resetNoteForm();
+            renderNotes();
+        }
+
+        function editNote(id) {
+            const note = getNotes().find(n => n.id === id);
+            if (!note) return;
+            editingNoteId = id;
+            document.getElementById('noteTitleInput').value = note.title;
+            document.getElementById('noteBodyInput').value = note.body;
+            document.getElementById('noteEditorHeading').innerHTML = '<i class="fa-solid fa-pen mr-1"></i> Editing Note';
+            document.getElementById('saveNoteBtn').innerHTML = '<i class="fa-solid fa-check mr-1"></i> Update Note';
+            document.getElementById('cancelEditNoteBtn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteNote(id) {
+            const notes = getNotes().filter(n => n.id !== id);
+            localStorage.setItem('samar_notes', JSON.stringify(notes));
+            if (editingNoteId === id) resetNoteForm();
+            renderNotes();
+            showToast('Note deleted');
+        }
+
+        function resetNoteForm() {
+            editingNoteId = null;
+            document.getElementById('noteTitleInput').value = '';
+            document.getElementById('noteBodyInput').value = '';
+            document.getElementById('noteEditorHeading').innerHTML = '<i class="fa-solid fa-pen-to-square mr-1"></i> New Note';
+            document.getElementById('saveNoteBtn').innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Save Note';
+            document.getElementById('cancelEditNoteBtn').classList.add('hidden');
+        }
+
+        function renderNotes() {
+            const query = (document.getElementById('noteSearchInput')?.value || '').toLowerCase();
+            const notes = getNotes().filter(n =>
+                n.title.toLowerCase().includes(query) || n.body.toLowerCase().includes(query)
+            );
+            const container = document.getElementById('notesListContainer');
+
+            if (!notes.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-xs bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/70 dark:border-slate-800">
+                        <i class="fa-regular fa-note-sticky text-2xl mb-2 block"></i>
+                        No notes found. Create your first note above!
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = notes.map(n => `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">${escapeHtml(n.title)}</h4>
+                            <span class="text-[10px] text-slate-400">${n.updatedAt}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="copyNoteBody(${n.id})" title="Copy" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs active:scale-95">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            <button onclick="editNote(${n.id})" title="Edit" class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs active:scale-95">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteNote(${n.id})" title="Delete" class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs active:scale-95">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(n.body)}</p>
+                </div>
+            `).join('');
+        }
+
+        function copyNoteBody(id) {
+            const note = getNotes().find(n => n.id === id);
+            if (note) copyToClipboard(`${note.title}\n\n${note.body}`);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+        renderNotes();
+
+        /* =====================================================================
+           6. QR CODE GENERATOR
+        ===================================================================== */
+        let qrType = 'text';
+        let qrColor = '#0f172a';
+        let qrInitialized = false;
+
+        function setQrType(type, btnEl) {
+            qrType = type;
+            document.querySelectorAll('.qr-type-btn').forEach(b => {
+                b.className = 'qr-type-btn py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition';
+            });
+            btnEl.className = 'qr-type-btn py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white transition';
+
+            ['text', 'wifi', 'contact'].forEach(t => {
+                document.getElementById(`qrFields-${t}`).classList.toggle('hidden', t !== type);
+            });
+            generateQR();
+        }
+
+        function setQrColor(hex) {
+            qrColor = hex;
+            generateQR();
+        }
+
+        function getQrPayload() {
+            if (qrType === 'text') {
+                return document.getElementById('qrTextInput').value.trim() || 'https://samartools.app';
+            }
+            if (qrType === 'wifi') {
+                const ssid = document.getElementById('qrWifiSsid').value.trim() || 'MyWiFi';
+                const pass = document.getElementById('qrWifiPass').value.trim();
+                const enc = document.getElementById('qrWifiEnc').value;
+                return `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+            }
+            if (qrType === 'contact') {
+                const name = document.getElementById('qrContactName').value.trim() || 'Samar User';
+                const phone = document.getElementById('qrContactPhone').value.trim();
+                const email = document.getElementById('qrContactEmail').value.trim();
+                return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${phone}\nEMAIL:${email}\nEND:VCARD`;
+            }
+            return 'Samar Tools';
+        }
+
+        function generateQR() {
+            const container = document.getElementById('qrOutput');
+            container.innerHTML = '';
+            const payload = getQrPayload();
+            new QRCode(container, {
+                text: payload,
+                width: 200,
+                height: 200,
+                colorDark: qrColor,
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrOutput canvas');
+            const img = document.querySelector('#qrOutput img');
+            let dataUrl = '';
+            if (canvas) {
+                dataUrl = canvas.toDataURL('image/png');
+            } else if (img && img.src) {
+                dataUrl = img.src;
+            }
+            if (!dataUrl) {
+                showToast('QR code not ready yet', true);
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `samar_qr_${Date.now()}.png`;
+            link.click();
+            showToast('QR Code PNG downloaded!');
+        }
+
+        /* =====================================================================
+           7. MERGE FILE (CLIENT-SIDE PDF & IMAGES MERGER VIA PDF-LIB)
+        ===================================================================== */
+        let selectedPdfFiles = [];
+        let selectedImgFiles = [];
+
+        function switchMergeTab(tab) {
+            const isPdf = tab === 'pdf';
+            document.getElementById('mergePdfPanel').classList.toggle('hidden', !isPdf);
+            document.getElementById('mergeImgPanel').classList.toggle('hidden', isPdf);
+
+            document.getElementById('mergeTabPdf').className = isPdf
+                ? 'py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm transition'
+                : 'py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition';
+            document.getElementById('mergeTabImg').className = !isPdf
+                ? 'py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm transition'
+                : 'py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 transition';
+        }
+
+        function handlePdfFilesSelect(event) {
+            const files = Array.from(event.target.files || []);
+            selectedPdfFiles = selectedPdfFiles.concat(files);
+            event.target.value = '';
+            renderPdfFileList();
+        }
+
+        function removePdfFile(idx) {
+            selectedPdfFiles.splice(idx, 1);
+            renderPdfFileList();
+        }
+
+        function renderPdfFileList() {
+            const list = document.getElementById('pdfFileList');
+            const btn = document.getElementById('mergePdfBtn');
+            btn.disabled = selectedPdfFiles.length < 2;
+
+            if (!selectedPdfFiles.length) {
+                list.innerHTML = '';
+                return;
+            }
+            list.innerHTML = selectedPdfFiles.map((f, idx) => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 text-xs">
+                    <div class="flex items-center gap-2.5 truncate">
+                        <span class="w-6 h-6 rounded-lg bg-cyan-500/15 text-cyan-600 font-bold flex items-center justify-center shrink-0">${idx + 1}</span>
+                        <span class="font-medium truncate">${escapeHtml(f.name)}</span>
+                    </div>
+                    <button onclick="removePdfFile(${idx})" class="text-rose-500 px-2 py-1"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+        }
+
+        async function mergeSelectedPdfs() {
+            if (selectedPdfFiles.length < 2) return;
+            const btn = document.getElementById('mergePdfBtn');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Merging PDFs...';
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const mergedPdf = await PDFDocument.create();
+
+                for (const file of selectedPdfFiles) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await PDFDocument.load(arrayBuffer);
+                    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                    copiedPages.forEach(page => mergedPdf.addPage(page));
+                }
+
+                const mergedBytes = await mergedPdf.save();
+                downloadBinaryFile(mergedBytes, `Samar_Merged_${Date.now()}.pdf`, 'application/pdf');
+                showToast('PDFs merged & downloaded!');
+            } catch (err) {
+                showToast('Error merging PDFs. Check file validity.', true);
+            } finally {
+                btn.disabled = selectedPdfFiles.length < 2;
+                btn.innerHTML = origHtml;
+            }
+        }
+
+        // Images to PDF
+        function handleImgPdfSelect(event) {
+            const files = Array.from(event.target.files || []);
+            selectedImgFiles = selectedImgFiles.concat(files);
+            event.target.value = '';
+            renderImgPdfList();
+        }
+
+        function removeImgPdfFile(idx) {
+            selectedImgFiles.splice(idx, 1);
+            renderImgPdfList();
+        }
+
+        function renderImgPdfList() {
+            const list = document.getElementById('imgPdfFileList');
+            const btn = document.getElementById('mergeImgBtn');
+            btn.disabled = selectedImgFiles.length < 1;
+
+            if (!selectedImgFiles.length) {
+                list.innerHTML = '';
+                return;
+            }
+            list.innerHTML = selectedImgFiles.map((f, idx) => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 text-xs">
+                    <div class="flex items-center gap-2.5 truncate">
+                        <span class="w-6 h-6 rounded-lg bg-cyan-500/15 text-cyan-600 font-bold flex items-center justify-center shrink-0">${idx + 1}</span>
+                        <span class="font-medium truncate">${escapeHtml(f.name)}</span>
+                    </div>
+                    <button onclick="removeImgPdfFile(${idx})" class="text-rose-500 px-2 py-1"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+        }
+
+        async function mergeImagesToPdf() {
+            if (!selectedImgFiles.length) return;
+            const btn = document.getElementById('mergeImgBtn');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Creating PDF...';
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+
+                for (const file of selectedImgFiles) {
+                    const bytes = await file.arrayBuffer();
+                    let embeddedImg;
+                    if (file.type === 'image/png') {
+                        embeddedImg = await pdfDoc.embedPng(bytes);
+                    } else if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
+                        embeddedImg = await pdfDoc.embedJpg(bytes);
+                    } else {
+                        // Convert WEBP to PNG via canvas first
+                        const pngBytes = await convertImageFileToPngBytes(file);
+                        embeddedImg = await pdfDoc.embedPng(pngBytes);
+                    }
+
+                    const page = pdfDoc.addPage([embeddedImg.width, embeddedImg.height]);
+                    page.drawImage(embeddedImg, {
+                        x: 0,
+                        y: 0,
+                        width: embeddedImg.width,
+                        height: embeddedImg.height
+                    });
+                }
+
+                const pdfBytes = await pdfDoc.save();
+                downloadBinaryFile(pdfBytes, `Samar_Images_${Date.now()}.pdf`, 'application/pdf');
+                showToast('Images converted to PDF!');
+            } catch (err) {
+                showToast('Failed to convert images to PDF', true);
+            } finally {
+                btn.disabled = selectedImgFiles.length < 1;
+                btn.innerHTML = origHtml;
+            }
+        }
+
+        function convertImageFileToPngBytes(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const c = document.createElement('canvas');
+                        c.width = img.width;
+                        c.height = img.height;
+                        c.getContext('2d').drawImage(img, 0, 0);
+                        c.toBlob(async blob => {
+                            resolve(await blob.arrayBuffer());
+                        }, 'image/png');
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function downloadBinaryFile(uint8Array, filename, mimeType) {
+            const blob = new Blob([uint8Array], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }
+    </script>
+</body>
+</html>
